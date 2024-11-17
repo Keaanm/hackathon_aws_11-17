@@ -79,13 +79,14 @@ const UploadModal = () => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button>Upload Food</Button>
+        <Button>Upload photo</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Upload Your Food picture</DialogTitle>
+          <DialogTitle>Professional Plate Analysis</DialogTitle>
           <DialogDescription>
-            We will generate the description of your food.
+            Upload your dish for a detailed nutritional breakdown by our
+            culinary experts.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col w-full">
@@ -120,7 +121,7 @@ const UploadModal = () => {
                     {...getInputProps()}
                   />
                   <div className="flex flex-col gap-2 w-full px-8 items-center justify-center">
-                    <p className="mb-2 text-lg text-[#09090B]">
+                    <p className="mb-2 text-sm text-[#09090B]">
                       <span className="font-semibold">Click to Upload</span> or
                       drag and drop
                     </p>

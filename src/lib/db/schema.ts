@@ -102,7 +102,7 @@ export const files = pgTable("file", {
   url: text("url").notNull(),
   key: text("key").notNull(),
 
-  userId: uuid("userId").references(() => users.id),
+  userId: uuid("userId").references(() => users.id, { onDelete: "cascade" }),
   createAt: timestamp("createAt").notNull(),
   updatedAt: timestamp("updatedAt"),
 });
@@ -111,7 +111,7 @@ export const foodNutrition = pgTable("food_nutrition", {
   id: uuid("id").primaryKey().defaultRandom(),
   fileId: uuid("fileId")
     .notNull()
-    .references(() => files.id),
+    .references(() => files.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   calories: integer("calories").notNull(),
   protein: integer("protein").notNull(),
@@ -121,3 +121,5 @@ export const foodNutrition = pgTable("food_nutrition", {
 });
 
 export const FileType = files.$inferSelect;
+
+export const FoodNutrationsType = foodNutrition.$inferSelect;

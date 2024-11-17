@@ -16,23 +16,22 @@ const {
   pgEnum,
 } = require("drizzle-orm/pg-core");
 
-// Database setup
 const db = drizzle(process.env.DATABASE_URL);
 
-// AWS Clients
 const s3 = new S3Client({ region: "us-west-2" });
 const bedrockClient = new BedrockRuntimeClient({ region: "us-west-2" });
 
-// Schema Definitions
-const foodItemSchema = z.object({
-  name: z.string(),
-  calories: z.number().int().nonnegative(),
-  protein: z.number().int().nonnegative(),
-  fat: z.number().int().nonnegative(),
-  carbs: z.number().int().nonnegative(),
+const foodItemsSchema = z.object({
+  items: z.array(
+    z.object({
+      name: z.string(),
+      calories: z.number().int().nonnegative(),
+      protein: z.number().int().nonnegative(),
+      carbs: z.number().int().nonnegative(),
+      fat: z.number().int().nonnegative(),
+    })
+  ),
 });
-
-const foodItemsSchema = z.array(foodItemSchema);
 
 const UploadEnum = pgEnum("uploadStatus", [
   "PENDING",
@@ -71,13 +70,13 @@ async function handler(event) {
     event.Records[0].s3.object.key.replace(/\+/g, " ")
   );
 
-  const [userId, fileNameWithId] = objectKey.split("/");
-  const fileId = fileNameWithId.split("-")[0];
+  const [userId, fileId, fileName] = objectKey.split("/");
 
   try {
     console.log("S3 Event:", JSON.stringify(event, null, 2));
     console.log("Extracted userId:", userId);
     console.log("Extracted fileId:", fileId);
+    console.log("Extracted fileName:", fileName);
 
     const { Body: imageStream } = await s3.send(
       new GetObjectCommand({ Bucket: bucketName, Key: objectKey })
@@ -88,7 +87,30 @@ async function handler(event) {
       temperature: 0.1,
       anthropic_version: "bedrock-2023-05-31",
       max_tokens: 1024,
-      system: `Analyze the image and return the nutritional values of each item in JSON format.`,
+      system: `Analyze the image and provide detailed nutritional information for each food item visible. 
+      For each item, extract:
+      - Name (be specific, e.g. "Grilled Chicken Breast" rather than just "Chicken")
+      - Calories (whole numbers only)
+      - Protein (in grams, whole numbers)
+      - Carbohydrates (in grams, whole numbers)
+      - Fat (in grams, whole numbers)
+
+      Format your response as a JSON object with an "items" array. Each item should be an object with the properties: name, calories, protein, carbs, and fat.
+      All numerical values must be non-negative integers.
+      Do not include anything else in your response.
+
+      Example response format:
+      {
+        "items": [
+          {
+            "name": "Grilled Chicken Breast",
+            "calories": 165,
+            "protein": 31,
+            "carbs": 0,
+            "fat": 3
+          }
+        ]
+      }`,
       messages: [
         {
           role: "user",
@@ -114,16 +136,29 @@ async function handler(event) {
     });
 
     const bedrockResponse = await bedrockClient.send(command);
-    const responseBody = JSON.parse(bedrockResponse.body);
 
-    const validatedData = foodItemsSchema.parse(
-      JSON.parse(responseBody.content[0].text)
-    );
+    const textDecoder = new TextDecoder();
+    const responseString = textDecoder.decode(bedrockResponse.body);
+
+    console.log("Decoded Bedrock Response String:", responseString);
+
+    const responseBody = JSON.parse(responseString);
+
+    console.log("Parsed Bedrock Response Body:", responseBody);
+
+    const rawText = responseBody.content[0].text.trim();
+
+    if (!rawText.startsWith("{") || !rawText.endsWith("}")) {
+      throw new Error("Invalid JSON format in Bedrock response");
+    }
+
+    const validatedData = foodItemsSchema.parse(JSON.parse(rawText));
+
+    console.log("validated data: " + validatedData);
 
     console.log("Validated Food Data:", validatedData);
 
-    // Insert each food item into the database
-    for (const food of validatedData.foodItems) {
+    for (const food of validatedData.items) {
       await db.insert(foodNutrition).values({
         fileId,
         name: food.name,
@@ -134,7 +169,6 @@ async function handler(event) {
       });
     }
 
-    // Update file status to SUCCESS
     await db
       .update(files)
       .set({ uploadStatus: "SUCCESS" })
@@ -149,8 +183,7 @@ async function handler(event) {
     };
   } catch (error) {
     console.error("Error processing image:", error);
-
-    // Update file status to FAILED in case of an error
+    r;
     await db
       .update(files)
       .set({ uploadStatus: "FAILED" })
@@ -166,7 +199,6 @@ async function handler(event) {
   }
 }
 
-// Helper: Convert Readable Stream to Buffer
 async function streamToBuffer(stream) {
   const chunks = [];
   for await (const chunk of stream) {

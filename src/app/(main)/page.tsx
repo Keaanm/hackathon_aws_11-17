@@ -8,7 +8,7 @@ export default async function Home() {
 
   if (!session?.user) redirect("/sign-in");
   return (
-    <section className="flex h-full flex-col gap-6 items-center px-5 py-6 container mx-auto">
+    <section className="flex h-full flex-col gap-6 items-center px-5 py-6 container mx-auto overflow-auto">
       <div className="flex w-full items-center justify-between">
         <h1 className="font-semibold text-3xl">Check your food</h1>
         <UploadModal />

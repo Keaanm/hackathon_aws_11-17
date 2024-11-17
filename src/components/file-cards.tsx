@@ -23,9 +23,13 @@ const FileCards = () => {
     },
     refetchInterval: (query) => {
       if (
-        query?.state?.data?.some((data) => data.uploadStatus === "PROCESSING")
+        query?.state?.data?.some(
+          (data) =>
+            data.uploadStatus === "PROCESSING" ||
+            data.uploadStatus === "PENDING"
+        )
       ) {
-        return 3000;
+        return 500;
       }
     },
   });

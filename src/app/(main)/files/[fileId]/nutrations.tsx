@@ -1,20 +1,16 @@
 import { db } from "@/lib/db/db";
-import { foodNutrition } from "@/lib/db/schema";
+import { FoodNutrationsType, foodNutrition } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { useQuery } from "@tanstack/react-query";
 
 interface NutritionProps {
-  fileId: string;
+  nutrations: (typeof FoodNutrationsType)[];
 }
 
-const Nutrations = async ({ fileId }: NutritionProps) => {
-  const nutrition = await db
-    .select()
-    .from(foodNutrition)
-    .where(eq(foodNutrition.fileId, fileId));
-
-  if (!nutrition || nutrition.length === 0) {
+const Nutrations = ({ nutrations }: NutritionProps) => {
+  if (!nutrations || nutrations.length === 0) {
     return (
       <div className="w-full p-4">
         <Card className="p-6">
@@ -26,7 +22,7 @@ const Nutrations = async ({ fileId }: NutritionProps) => {
     );
   }
 
-  const item = nutrition[0];
+  const item = nutrations[0];
   const totalMacros = item.protein + item.fat + item.carbs;
 
   const MacroItem = ({

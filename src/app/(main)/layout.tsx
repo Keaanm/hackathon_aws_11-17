@@ -5,7 +5,7 @@ import React from "react";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <main className="flex flex-col h-full">
+    <main className="flex flex-col h-full overflow-hidden">
       <Navbar />
       {children}
     </main>

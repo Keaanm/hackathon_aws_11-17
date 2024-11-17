@@ -26,13 +26,15 @@ export const POST = auth(async function POST(req) {
     NextResponse.json({ message: "Not authenticated" }, { status: 401 });
   }
   const { fileName, fileType } = await req.json();
-  const uniqueKey = `${userId}/${crypto.randomUUID()}-${fileName}`;
+  const fileId = crypto.randomUUID();
+  const uniqueKey = `${userId}/${fileId}/${fileName}`;
 
   try {
     await db.insert(files).values({
+      id: fileId,
       name: fileName,
       key: uniqueKey,
-      uploadStatus: "PENDING" as const,
+      uploadStatus: "PROCESSING" as const,
       userId: userId,
       url: `https://${process.env
         .NEXT_PUBLIC_AWS_BUCKET!}.s3.${"us-west-2"}.amazonaws.com/${uniqueKey}`,

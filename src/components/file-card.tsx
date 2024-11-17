@@ -23,7 +23,7 @@ export const FileCard = ({ card }: FileCardProps) => {
         method: "DELETE",
       });
       if (!res.ok) {
-        throw new Error("Failed to delte file");
+        throw new Error("Failed to delete file");
       }
       return res.json();
     },
@@ -75,11 +75,16 @@ export const FileCard = ({ card }: FileCardProps) => {
           className="text-xs flex items-center space-x-1 text-red-600 hover:text-red-700 transition-colors"
         >
           {deleteMutation.isPending ? (
-            <Loader2 className="animate-spin text-blue-500 size-3" />
+            <div className="text-xs flex items-center space-x-1 text-blue-500 transition-colors">
+              <Loader2 className="animate-spin text-blue-500 size-3" />
+              <span>Deleting...</span>
+            </div>
           ) : (
-            <Trash2Icon className="w-3 h-3" />
+            <div className="text-xs flex items-center space-x-1 text-red-600 hover:text-red-700 transition-colors">
+              <Trash2Icon className="w-3 h-3" />
+              <span>Delete</span>
+            </div>
           )}
-          <span>Delete</span>
         </button>
       </CardFooter>
     </Card>
