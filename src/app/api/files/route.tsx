@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/db";
 import { files } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 
 export const GET = auth(async function GET(req) {
   if (!req.auth?.user) {
@@ -17,7 +17,8 @@ export const GET = auth(async function GET(req) {
     const userFiles = await db
       .select()
       .from(files)
-      .where(eq(files.userId, userId!));
+      .where(eq(files.userId, userId!))
+      .orderBy(desc(files.createAt));
 
     return NextResponse.json(userFiles);
   } catch (error) {

@@ -82,12 +82,10 @@ const FileCards = () => {
   }
 
   return (
-    <div className="w-full">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-x-auto pb-4">
-        {data.map((card) => (
-          <FileCard key={card.id} card={card} />
-        ))}
-      </div>
+    <div className="flex flex-wrap gap-4 w-full justify-center md:justify-start">
+      {data.map((card) => (
+        <FileCard key={card.id} card={card} />
+      ))}
     </div>
   );
 };

@@ -87,7 +87,7 @@ async function handler(event) {
       temperature: 0.1,
       anthropic_version: "bedrock-2023-05-31",
       max_tokens: 1024,
-      system: `Analyze the image and provide detailed nutritional information for each food item visible. 
+      system: `Analyze the image and provide detailed nutritional information for each food item visible. Please provide an overestimate (upper bound estimate) of the nutritional values for each element of the dish.
       For each item, extract:
       - Name (be specific, e.g. "Grilled Chicken Breast" rather than just "Chicken")
       - Calories (whole numbers only)
