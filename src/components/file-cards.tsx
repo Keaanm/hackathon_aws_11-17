@@ -85,7 +85,7 @@ const FileCards = () => {
     <div className="w-full">
       <div className="flex space-x-4 overflow-x-auto pb-4">
         {data.map((card) => (
-          <FileCard card={card} />
+          <FileCard key={card.id} card={card} />
         ))}
       </div>
     </div>
